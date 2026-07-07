@@ -1,0 +1,183 @@
+import { z } from "zod/v4";
+export interface ContractTopCarEntry {
+    plate: string;
+    model: string;
+}
+export declare const contractsTable: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "contracts";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "contracts";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        rentalId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "rental_id";
+            tableName: "contracts";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        customerName: import("drizzle-orm/pg-core").PgColumn<{
+            name: "customer_name";
+            tableName: "contracts";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        carModel: import("drizzle-orm/pg-core").PgColumn<{
+            name: "car_model";
+            tableName: "contracts";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        carPlate: import("drizzle-orm/pg-core").PgColumn<{
+            name: "car_plate";
+            tableName: "contracts";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        date: import("drizzle-orm/pg-core").PgColumn<{
+            name: "date";
+            tableName: "contracts";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        photos: import("drizzle-orm/pg-core").PgColumn<{
+            name: "photos";
+            tableName: "contracts";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: string[];
+            driverParam: unknown;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            $type: string[];
+        }>;
+        notes: import("drizzle-orm/pg-core").PgColumn<{
+            name: "notes";
+            tableName: "contracts";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        createdAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_at";
+            tableName: "contracts";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const insertContractSchema: z.ZodObject<{
+    date: z.ZodOptional<z.ZodDate>;
+    id: z.ZodString;
+    customerName: z.ZodString;
+    rentalId: z.ZodOptional<z.ZodNullable<z.ZodInt>>;
+    carPlate: z.ZodOptional<z.ZodString>;
+    carModel: z.ZodOptional<z.ZodString>;
+    notes: z.ZodOptional<z.ZodString>;
+    photos: z.ZodOptional<z.ZodType<string[], string[], z.core.$ZodTypeInternals<string[], string[]>>>;
+}, {
+    out: {};
+    in: {};
+}>;
+export type InsertContract = z.infer<typeof insertContractSchema>;
+export type Contract = typeof contractsTable.$inferSelect;
+//# sourceMappingURL=contracts.d.ts.map

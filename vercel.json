@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter @workspace/car-rental run build",
+  "outputDirectory": "artifacts/car-rental/dist",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://YOUR_RENDER_API_URL/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ]
+}

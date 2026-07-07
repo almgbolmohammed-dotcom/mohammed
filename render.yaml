@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: car-rental-api
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build
+    startCommand: node artifacts/api-server/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false

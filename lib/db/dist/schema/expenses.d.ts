@@ -1,0 +1,131 @@
+import { z } from "zod/v4";
+export declare const expenseCategoryEnum: import("drizzle-orm/pg-core").PgEnum<["salary", "rent", "utilities", "parts", "fuel", "insurance", "other"]>;
+export declare const expensesTable: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "expenses";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "expenses";
+            dataType: "number";
+            columnType: "PgSerial";
+            data: number;
+            driverParam: number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        category: import("drizzle-orm/pg-core").PgColumn<{
+            name: "category";
+            tableName: "expenses";
+            dataType: "string";
+            columnType: "PgEnumColumn";
+            data: "salary" | "rent" | "utilities" | "parts" | "fuel" | "insurance" | "other";
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: ["salary", "rent", "utilities", "parts", "fuel", "insurance", "other"];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        description: import("drizzle-orm/pg-core").PgColumn<{
+            name: "description";
+            tableName: "expenses";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        amount: import("drizzle-orm/pg-core").PgColumn<{
+            name: "amount";
+            tableName: "expenses";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        date: import("drizzle-orm/pg-core").PgColumn<{
+            name: "date";
+            tableName: "expenses";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        createdAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_at";
+            tableName: "expenses";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const insertExpenseSchema: z.ZodObject<{
+    date: z.ZodOptional<z.ZodDate>;
+    description: z.ZodString;
+    category: z.ZodOptional<z.ZodEnum<{
+        salary: "salary";
+        rent: "rent";
+        utilities: "utilities";
+        parts: "parts";
+        fuel: "fuel";
+        insurance: "insurance";
+        other: "other";
+    }>>;
+    amount: z.ZodInt;
+}, {
+    out: {};
+    in: {};
+}>;
+export type InsertExpense = z.infer<typeof insertExpenseSchema>;
+export type Expense = typeof expensesTable.$inferSelect;
+//# sourceMappingURL=expenses.d.ts.map

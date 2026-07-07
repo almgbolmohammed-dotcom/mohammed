@@ -1,0 +1,1556 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Car rental management API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: cars
+    description: Car operations
+  - name: rentals
+    description: Rental operations
+  - name: income
+    description: Income records
+  - name: debts
+    description: Debt records
+  - name: summary
+    description: Dashboard summaries
+  - name: reservations
+    description: Car reservations
+  - name: maintenance
+    description: Car maintenance
+  - name: expenses
+    description: Office expenses
+  - name: accounts
+    description: Financial accounts summary
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /cars:
+    get:
+      operationId: listCars
+      tags: [cars]
+      summary: List all cars
+      responses:
+        "200":
+          description: List of cars
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Car"
+    post:
+      operationId: createCar
+      tags: [cars]
+      summary: Add a new car
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarBody"
+      responses:
+        "201":
+          description: Car created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Car"
+
+  /cars/{id}:
+    get:
+      operationId: getCar
+      tags: [cars]
+      summary: Get car by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Car
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Car"
+    put:
+      operationId: updateCar
+      tags: [cars]
+      summary: Update car
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarBody"
+      responses:
+        "200":
+          description: Updated car
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Car"
+    delete:
+      operationId: deleteCar
+      tags: [cars]
+      summary: Delete car
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /cars/{id}/activity:
+    get:
+      operationId: getCarActivity
+      tags: [cars]
+      summary: Get rental activity history for a car
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [week, month, all]
+            default: month
+      responses:
+        "200":
+          description: Car activity history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarActivityItem"
+
+  /cars/{id}/activity/{activityId}:
+    delete:
+      operationId: deleteCarActivity
+      tags: [cars]
+      summary: Delete a car activity record (income or debt)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [income, debt]
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /rentals:
+    get:
+      operationId: listRentals
+      tags: [rentals]
+      summary: List rentals
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, completed]
+      responses:
+        "200":
+          description: List of rentals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rental"
+    post:
+      operationId: createRental
+      tags: [rentals]
+      summary: Start a new rental
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRentalBody"
+      responses:
+        "201":
+          description: Rental started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rental"
+
+  /rentals/{id}:
+    get:
+      operationId: getRental
+      tags: [rentals]
+      summary: Get rental by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rental
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rental"
+
+  /rentals/{id}/update-rate:
+    put:
+      operationId: updateRentalRate
+      tags: [rentals]
+      summary: Update rental rate and zone mid-trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRentalRateBody"
+      responses:
+        "200":
+          description: Updated rental
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rental"
+
+  /rentals/{id}/complete:
+    post:
+      operationId: completeRental
+      tags: [rentals]
+      summary: Complete a rental (mark as paid or debt)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteRentalBody"
+      responses:
+        "200":
+          description: Completed rental with record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteRentalResponse"
+
+  /income:
+    get:
+      operationId: listIncome
+      tags: [income]
+      summary: List income records
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Income records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncomeRecord"
+
+  /income/{id}:
+    delete:
+      operationId: deleteIncome
+      tags: [income]
+      summary: Delete an income record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /debts:
+    get:
+      operationId: listDebts
+      tags: [debts]
+      summary: List debt records
+      responses:
+        "200":
+          description: Debt records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DebtRecord"
+
+  /debts/{id}:
+    delete:
+      operationId: deleteDebt
+      tags: [debts]
+      summary: Delete a debt record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /debts/{id}/settle:
+    post:
+      operationId: settleDebt
+      tags: [debts]
+      summary: Settle a debt (move to income)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Settled debt and income record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncomeRecord"
+
+  /summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [summary]
+      summary: Dashboard summary stats
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /reservations:
+    get:
+      operationId: listReservations
+      tags: [reservations]
+      summary: List reservations
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+      responses:
+        "200":
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+    post:
+      operationId: createReservation
+      tags: [reservations]
+      summary: Create a new reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationBody"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+
+  /reservations/{id}:
+    put:
+      operationId: updateReservation
+      tags: [reservations]
+      summary: Update a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReservationBody"
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+    delete:
+      operationId: deleteReservation
+      tags: [reservations]
+      summary: Delete a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /maintenance:
+    get:
+      operationId: listMaintenance
+      tags: [maintenance]
+      summary: List maintenance records
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, completed]
+        - name: carId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of maintenance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceRecord"
+    post:
+      operationId: createMaintenance
+      tags: [maintenance]
+      summary: Create a maintenance record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMaintenanceBody"
+      responses:
+        "201":
+          description: Maintenance created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceRecord"
+
+  /maintenance/{id}:
+    put:
+      operationId: updateMaintenance
+      tags: [maintenance]
+      summary: Update a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMaintenanceBody"
+      responses:
+        "200":
+          description: Updated maintenance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceRecord"
+    delete:
+      operationId: deleteMaintenance
+      tags: [maintenance]
+      summary: Delete a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List expenses
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseBody"
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /expenses/{id}:
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /accounts/summary:
+    get:
+      operationId: getAccountsSummary
+      tags: [accounts]
+      summary: Get income/expenses/profit summary for a period
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [today, yesterday, week, month, year, custom]
+            default: month
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Accounts summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountsSummary"
+
+  /contracts:
+    get:
+      operationId: listContracts
+      tags: [contracts]
+      summary: List all contracts
+      responses:
+        "200":
+          description: List of contracts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+    post:
+      operationId: createContract
+      tags: [contracts]
+      summary: Create or update a contract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertContractBody"
+      responses:
+        "201":
+          description: Created contract
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+
+  /contracts/{id}:
+    put:
+      operationId: updateContract
+      tags: [contracts]
+      summary: Update a contract
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertContractBody"
+      responses:
+        "200":
+          description: Updated contract
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+    delete:
+      operationId: deleteContract
+      tags: [contracts]
+      summary: Delete a contract
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+
+  /car-photos/{carId}:
+    get:
+      operationId: getCarPhotos
+      tags: [cars]
+      summary: Get photos for a car
+      parameters:
+        - name: carId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Car photos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarPhotos"
+    put:
+      operationId: updateCarPhotos
+      tags: [cars]
+      summary: Update photos for a car
+      parameters:
+        - name: carId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCarPhotosBody"
+      responses:
+        "200":
+          description: Updated car photos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarPhotos"
+
+  /monthly-reports:
+    get:
+      operationId: listMonthlyReports
+      tags: [reports]
+      summary: List all monthly reports
+      responses:
+        "200":
+          description: List of monthly reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyReport"
+    post:
+      operationId: createMonthlyReport
+      tags: [reports]
+      summary: Create or update a monthly report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertMonthlyReportBody"
+      responses:
+        "201":
+          description: Saved report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyReport"
+
+  /monthly-reports/{id}:
+    delete:
+      operationId: deleteMonthlyReport
+      tags: [reports]
+      summary: Delete a monthly report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    Car:
+      type: object
+      properties:
+        id:
+          type: integer
+        plateNumber:
+          type: string
+        model:
+          type: string
+        defaultRateInside:
+          type: integer
+          description: Default daily rate inside Sanaa in YER
+        defaultRateOutside:
+          type: integer
+          description: Default daily rate outside Sanaa in YER
+        isAvailable:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, plateNumber, model, defaultRateInside, defaultRateOutside, isAvailable, createdAt]
+
+    CreateCarBody:
+      type: object
+      properties:
+        plateNumber:
+          type: string
+        model:
+          type: string
+        defaultRateInside:
+          type: integer
+        defaultRateOutside:
+          type: integer
+      required: [plateNumber, model, defaultRateInside, defaultRateOutside]
+
+    Rental:
+      type: object
+      properties:
+        id:
+          type: integer
+        carId:
+          type: integer
+        carPlate:
+          type: string
+        carModel:
+          type: string
+        zone:
+          type: string
+          enum: [inside, outside]
+          description: inside = داخل صنعاء, outside = خارج صنعاء
+        dailyRate:
+          type: integer
+          description: Rate per day in YER (can be customized)
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        daysCount:
+          type: integer
+          description: Number of full 24h cycles completed
+        totalAmount:
+          type: integer
+          description: Total amount in YER
+        status:
+          type: string
+          enum: [active, completed]
+        customerName:
+          type: string
+          nullable: true
+        customerPhone:
+          type: string
+          nullable: true
+        plannedDays:
+          type: integer
+          nullable: true
+          description: Number of planned days. Null means open-ended rental.
+        startKm:
+          type: integer
+          nullable: true
+          description: Odometer reading at start
+        allowedKm:
+          type: integer
+          nullable: true
+          description: Km allowed in total. Null means unlimited.
+        extraKmRate:
+          type: integer
+          nullable: true
+          description: Price per 10 extra km in YER
+        endKm:
+          type: integer
+          nullable: true
+          description: Odometer reading at end (filled when completing)
+      required: [id, carId, carPlate, carModel, zone, dailyRate, startedAt, daysCount, totalAmount, status]
+
+    CreateRentalBody:
+      type: object
+      properties:
+        carId:
+          type: integer
+        zone:
+          type: string
+          enum: [inside, outside]
+        dailyRate:
+          type: integer
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        plannedDays:
+          type: integer
+          description: Number of planned days (optional). Omit for open-ended rental.
+        startKm:
+          type: integer
+          description: Odometer reading at start (optional)
+        allowedKm:
+          type: integer
+          description: Km allowed in total (optional, null = unlimited)
+        extraKmRate:
+          type: integer
+          description: Price per 10 extra km (optional)
+      required: [carId, zone, dailyRate]
+
+    UpdateRentalRateBody:
+      type: object
+      properties:
+        zone:
+          type: string
+          enum: [inside, outside]
+        dailyRate:
+          type: integer
+        plannedDays:
+          type: integer
+          minimum: 1
+          nullable: true
+      required: [zone, dailyRate]
+
+    CompleteRentalBody:
+      type: object
+      properties:
+        isPaid:
+          type: boolean
+          description: true = paid (income), false = debt. Ignored when partialAmount is provided.
+        partialAmount:
+          type: integer
+          description: When set, creates an income record for this amount and a debt record for the remainder. isPaid is ignored.
+        endKm:
+          type: integer
+          description: Odometer reading at end (optional, for km billing)
+        extraKmCharge:
+          type: integer
+          description: Extra km charge calculated by client (optional)
+      required: [isPaid]
+
+    CompleteRentalResponse:
+      type: object
+      properties:
+        rental:
+          $ref: "#/components/schemas/Rental"
+        record:
+          oneOf:
+            - $ref: "#/components/schemas/IncomeRecord"
+            - $ref: "#/components/schemas/DebtRecord"
+      required: [rental, record]
+
+    IncomeRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        rentalId:
+          type: integer
+        carPlate:
+          type: string
+        carModel:
+          type: string
+        customerName:
+          type: string
+          nullable: true
+        zone:
+          type: string
+          enum: [inside, outside]
+        daysCount:
+          type: integer
+        dailyRate:
+          type: integer
+        totalAmount:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, rentalId, carPlate, carModel, zone, daysCount, dailyRate, totalAmount, startedAt, completedAt, createdAt]
+
+    DebtRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        rentalId:
+          type: integer
+        carPlate:
+          type: string
+        carModel:
+          type: string
+        customerName:
+          type: string
+          nullable: true
+        zone:
+          type: string
+          enum: [inside, outside]
+        daysCount:
+          type: integer
+        dailyRate:
+          type: integer
+        totalAmount:
+          type: integer
+        isSettled:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, rentalId, carPlate, carModel, zone, daysCount, dailyRate, totalAmount, isSettled, startedAt, completedAt, createdAt]
+
+    DashboardSummary:
+      type: object
+      properties:
+        activeRentals:
+          type: integer
+        availableCars:
+          type: integer
+        totalCars:
+          type: integer
+        totalIncomeThisMonth:
+          type: integer
+        totalDebtOutstanding:
+          type: integer
+        totalCompletedRentals:
+          type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+      required: [activeRentals, availableCars, totalCars, totalIncomeThisMonth, totalDebtOutstanding, totalCompletedRentals, recentActivity]
+
+    ActivityItem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rental_started, rental_completed, debt_settled]
+        carPlate:
+          type: string
+        description:
+          type: string
+        amount:
+          type: integer
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      required: [type, carPlate, description, timestamp]
+
+    CarActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [income, debt]
+        customerName:
+          type: string
+          nullable: true
+        zone:
+          type: string
+          enum: [inside, outside]
+        daysCount:
+          type: integer
+        dailyRate:
+          type: integer
+        totalAmount:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        isSettled:
+          type: boolean
+          nullable: true
+      required: [id, type, zone, daysCount, dailyRate, totalAmount, startedAt, completedAt]
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        carId:
+          type: integer
+        carPlate:
+          type: string
+        carModel:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        zone:
+          type: string
+          enum: [inside, outside]
+        dailyRate:
+          type: integer
+        notes:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, carId, carPlate, carModel, customerName, startDate, endDate, zone, dailyRate, status, createdAt]
+
+    CreateReservationBody:
+      type: object
+      properties:
+        carId:
+          type: integer
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        zone:
+          type: string
+          enum: [inside, outside]
+        dailyRate:
+          type: integer
+        notes:
+          type: string
+      required: [carId, customerName, startDate, endDate, zone, dailyRate]
+
+    UpdateReservationBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        zone:
+          type: string
+          enum: [inside, outside]
+        dailyRate:
+          type: integer
+        notes:
+          type: string
+      required: []
+
+    MaintenanceRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        carId:
+          type: integer
+        carPlate:
+          type: string
+        carModel:
+          type: string
+        type:
+          type: string
+          enum: [emergency, periodic]
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        estimatedEndDate:
+          type: string
+          format: date-time
+          nullable: true
+        cost:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [active, completed]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, carId, carPlate, carModel, type, description, startDate, status, createdAt]
+
+    CreateMaintenanceBody:
+      type: object
+      properties:
+        carId:
+          type: integer
+        type:
+          type: string
+          enum: [emergency, periodic]
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        estimatedEndDate:
+          type: string
+          format: date-time
+        cost:
+          type: integer
+        notes:
+          type: string
+      required: [carId, type, description]
+
+    UpdateMaintenanceBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, completed]
+        description:
+          type: string
+        estimatedEndDate:
+          type: string
+          format: date-time
+        cost:
+          type: integer
+        notes:
+          type: string
+      required: []
+
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: [salary, rent, utilities, parts, fuel, insurance, other]
+        description:
+          type: string
+        amount:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, category, description, amount, date, createdAt]
+
+    CreateExpenseBody:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [salary, rent, utilities, parts, fuel, insurance, other]
+        description:
+          type: string
+        amount:
+          type: integer
+        date:
+          type: string
+          format: date-time
+      required: [category, description, amount]
+
+    AccountsSummary:
+      type: object
+      properties:
+        income:
+          type: integer
+          description: Total income for the period
+        expenses:
+          type: integer
+          description: Total expenses for the period
+        netProfit:
+          type: integer
+          description: income - expenses
+        debtCollected:
+          type: integer
+          description: Settled debts collected in the period
+        period:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+      required: [income, expenses, netProfit, debtCollected, period, from, to]
+
+    Contract:
+      type: object
+      properties:
+        id:
+          type: string
+        rentalId:
+          type: integer
+          nullable: true
+        customerName:
+          type: string
+        carModel:
+          type: string
+        carPlate:
+          type: string
+        date:
+          type: string
+          format: date-time
+        photos:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, customerName, carModel, carPlate, date, photos, notes, createdAt]
+
+    UpsertContractBody:
+      type: object
+      properties:
+        id:
+          type: string
+        rentalId:
+          type: integer
+          nullable: true
+        customerName:
+          type: string
+        carModel:
+          type: string
+        carPlate:
+          type: string
+        date:
+          type: string
+          format: date-time
+        photos:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [id, customerName]
+
+    CarPhotos:
+      type: object
+      properties:
+        carId:
+          type: integer
+        photos:
+          type: array
+          items:
+            type: string
+      required: [carId, photos]
+
+    UpdateCarPhotosBody:
+      type: object
+      properties:
+        photos:
+          type: array
+          items:
+            type: string
+      required: [photos]
+
+    ReportCarStat:
+      type: object
+      properties:
+        plate:
+          type: string
+        model:
+          type: string
+        income:
+          type: integer
+        rentals:
+          type: integer
+      required: [plate, model, income, rentals]
+
+    MonthlyReport:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        totalIncome:
+          type: integer
+        totalExpenses:
+          type: integer
+        netProfit:
+          type: integer
+        totalRentals:
+          type: integer
+        completedRentals:
+          type: integer
+        totalDebt:
+          type: integer
+        topCars:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportCarStat"
+        contractsCount:
+          type: integer
+      required: [id, label, year, month, generatedAt, totalIncome, totalExpenses, netProfit, totalRentals, completedRentals, totalDebt, topCars, contractsCount]
+
+    UpsertMonthlyReportBody:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        totalIncome:
+          type: integer
+        totalExpenses:
+          type: integer
+        netProfit:
+          type: integer
+        totalRentals:
+          type: integer
+        completedRentals:
+          type: integer
+        totalDebt:
+          type: integer
+        topCars:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportCarStat"
+        contractsCount:
+          type: integer
+      required: [id, label, year, month]
